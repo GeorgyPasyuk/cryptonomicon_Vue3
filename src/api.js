@@ -8,21 +8,14 @@ const socket = new WebSocket(
 
 const AGGREGATE_INDEX = "5";
 
+const tickersData = [];
+
 socket.addEventListener("message", (e) => {
   const {
     TYPE: type,
     FROMSYMBOL: currency,
     PRICE: newPrice,
-    //MESSAGE: message,
   } = JSON.parse(e.data);
-  console.log(currency);
-  /*let allTickers = Array.from(tickersHandlers.keys());
-  let currentTicker = allTickers[allTickers.length - 1];
-  if (message === "INVALID_SUB") {
-    subscribeToTickerOnWsUSD(currentTicker);
-  }
-  */
-
   if (type !== AGGREGATE_INDEX || newPrice === undefined) {
     return;
   }
@@ -33,43 +26,31 @@ socket.addEventListener("message", (e) => {
 /*TODO: refactor to use URLSearchParams*/
 
 function sendToWebSocket(message) {
-  const stringifiedMessageBTC = JSON.stringify(message);
+  const stringifiedMessage = JSON.stringify(message);
   if (socket.readyState === WebSocket.OPEN) {
-    socket.send(stringifiedMessageBTC);
+    socket.send(stringifiedMessage);
     return;
   }
   socket.addEventListener(
     "open",
     () => {
-      socket.send(stringifiedMessageBTC);
+      socket.send(stringifiedMessage);
     },
     { once: true }
   );
 }
 
-function subscribeToTickerOnWs(ticker, toSyms = "USD") {
+function subscribeToTickerOnWs(ticker, currency = "USD") {
   sendToWebSocket({
     action: "SubAdd",
-    subs: [`5~CCCAGG~${ticker}~${toSyms}`],
+    subs: [`5~CCCAGG~${ticker}~${currency}`],
   });
 }
-/*function subscribeToTickerOnWsUSD(ticker, toSyms = "USD") {
-  sendToWebSocket({
-    action: "SubAdd",
-    subs: [`5~CCCAGG~${ticker}~${toSyms}`],
-  });
-}*/
 
-function unsubscribeFromTickerOnWs(ticker, toSyms = "USD") {
+function unsubscribeFromTickerOnWs(ticker, currency = "USD") {
   sendToWebSocket({
     action: "SubRemove",
-    subs: [`5~CCCAGG~${ticker}~${toSyms}`],
-  });
-}
-function unsubscribeFromTickerOnWsUSD(ticker, toSyms = "USD") {
-  sendToWebSocket({
-    action: "SubRemove",
-    subs: [`5~CCCAGG~${ticker}~${toSyms}`],
+    subs: [`5~CCCAGG~${ticker}~${currency}`],
   });
 }
 
@@ -77,10 +58,10 @@ export const subscribeToTicker = (ticker, cb) => {
   const subscribers = tickersHandlers.get(ticker) || [];
   tickersHandlers.set(ticker, [...subscribers, cb]);
   subscribeToTickerOnWs(ticker);
+  tickersData.push(ticker);
 };
 
 export const unsubscribeFromTicker = (ticker) => {
   tickersHandlers.delete(ticker);
   unsubscribeFromTickerOnWs(ticker);
-  unsubscribeFromTickerOnWsUSD(ticker);
 };

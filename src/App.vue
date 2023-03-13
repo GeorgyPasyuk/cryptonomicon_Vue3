@@ -24,32 +24,12 @@
               v-if="ticker"
             >
               <span
-                @click="autoAdd(filteredCoinList[0])"
-                v-if="filteredCoinList !== null"
+                v-for="ticker in filteredCoinList.slice(0, 4)"
+                v-bind:key="ticker"
+                @click="autoAdd(ticker)"
                 class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
               >
-                {{ filteredCoinList[0] }}
-              </span>
-              <span
-                @click="autoAdd(filteredCoinList[1])"
-                v-if="filteredCoinList[1]"
-                class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
-              >
-                {{ filteredCoinList[1] }}
-              </span>
-              <span
-                @click="autoAdd(filteredCoinList[2])"
-                v-if="filteredCoinList[2]"
-                class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
-              >
-                {{ filteredCoinList[2] }}
-              </span>
-              <span
-                @click="autoAdd(filteredCoinList[3])"
-                v-if="filteredCoinList[3]"
-                class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
-              >
-                {{ filteredCoinList[3] }}
+                {{ ticker }}
               </span>
             </div>
             <template v-for="t in tickers" :key="t">
@@ -110,6 +90,7 @@
             @click="select(t)"
             :class="{
               'border-4': selectedTicker === t,
+              'bg-red-100': t.price === '-',
             }"
             class="bg-white overflow-hidden shadow rounded-lg border-purple-800 border-solid cursor-pointer"
           >
@@ -149,7 +130,10 @@
         <h3 class="text-lg leading-6 font-medium text-gray-900 my-8">
           {{ selectedTicker.name }} - USD
         </h3>
-        <div class="flex items-end border-gray-600 border-b border-l h-64">
+        <div
+          class="flex items-end border-gray-600 border-b border-l h-64"
+          ref="graph"
+        >
           <div
             v-for="(bar, idx) in normalizedGraph"
             :key="idx"
@@ -191,15 +175,15 @@
 
 <script>
 // [X] 1. Наличие в состоянии ЗАВСИМЫХ ДАННЫХ | Критичность: 5+
-// [ ] 2. Запросы напрямую внутри компонента (???) | Критичность: 5
-// [ ] 3. При удалении остается подписка на загрузку тикера | Критичность: 5
+// [X] 2. Запросы напрямую внутри компонента (???) | Критичность: 5
+// [X] 3. При удалении остается подписка на загрузку тикера | Критичность: 5
 // [ ] 4. Обработка ошибок API | Критичность: 5
-// [ ] 5. Количество запросов | Критичность: 4
+// [Z] 5. Количество запросов | Критичность: 4
 // [X] 6. При удалении тикера не изменяется localStorage | Критичность: 4
 // [X] 7. Одинаковый код в watch | Критичность: 3
-// [ ] 8. localStorage и анонимный вкладки (недоступность localStorage в анонимых вкладках) | Критичность: 3
-// [ ] 9. График ужасно выглядит если много цен | Критичность: 2
-// [ ] 10. Непонятный строки и числа (URL, 5000ms, ключ локал стораджа, количество на странице) | Критичность: 1
+// [] 8. localStorage и анонимный вкладки (недоступность localStorage в анонимых вкладках) | Критичность: 3
+// [X] 9. График ужасно выглядит если много цен | Критичность: 2
+// [] 10. Непонятный строки и числа (URL, 5000ms, ключ локал стораджа, количество на странице) | Критичность: 1
 
 // Параллельно
 // [X] График сломан если везде одинаковые значения
@@ -218,6 +202,7 @@ export default {
       tickers: [],
       selectedTicker: null,
       graph: [],
+      maxGraphElements: 1,
       /**/
       coinList: [],
       filteredCoinList: [],
@@ -251,16 +236,19 @@ export default {
     // setInterval(this.updateTickers, 5000);
   },
 
-  async mounted() {
-    const c = await fetch(
-      "https://min-api.cryptocompare.com/data/all/coinlist?summary=true"
-    );
-    const lc = await c.json();
-    const CoinData = lc.Data;
-    for (let i in CoinData) {
-      let Coins = CoinData[i];
-      this.coinList.push(Coins["Symbol"]);
-    }
+  mounted() {
+    fetch("https://min-api.cryptocompare.com/data/all/coinlist?summary=true")
+      .then((response) => response.json())
+      .then((json) => {
+        for (let i in json.Data) {
+          this.coinList.push(json.Data[i]["Symbol"]);
+        }
+      });
+    window.addEventListener("resize", this.calculateMaxGraphElements);
+  },
+
+  beforeUnmount() {
+    window.removeEventListener("resize", this.calculateMaxGraphElements);
   },
 
   computed: {
@@ -302,12 +290,22 @@ export default {
   },
 
   methods: {
+    calculateMaxGraphElements() {
+      if (!this.$refs.graph) {
+        return;
+      }
+      this.maxGraphElements = this.$refs.graph.clientWidth / 38;
+    },
+
     updateTicker(tickerName, price) {
       this.tickers
         .filter((t) => t.name === tickerName)
         .forEach((t) => {
           if (t === this.selectedTicker) {
             this.graph.push(price);
+            while (this.graph.length > this.maxGraphElements) {
+              this.graph.shift();
+            }
           }
           t.price = price;
         });
@@ -335,7 +333,6 @@ export default {
         name: this.ticker,
         price: "-",
       };
-
       this.tickers = [...this.tickers, currentTicker];
       this.ticker = "";
       this.filter = "";
@@ -349,21 +346,11 @@ export default {
         name: (this.filteredCoinList = filteredCoinList),
         price: "-",
       };
-
-      this.tickers.push(currentTicker);
-      setInterval(async () => {
-        const f = await fetch(
-          `https://min-api.cryptocompare.com/data/price?fsym=${currentTicker.name}&tsyms=BTC&api_key=5346162556ac0889a345de2745e8c6e89e16bf29e30fd005c3ba68571430598b`
-        );
-        const data = await f.json();
-        this.tickers.find((t) => t.name === currentTicker.name).price =
-          data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
-
-        if (this.selectedTicker?.name === currentTicker.name) {
-          this.graph.push(data.USD);
-        }
-      }, 5000);
+      this.tickers = [...this.tickers, currentTicker];
       this.ticker = "";
+      subscribeToTicker(currentTicker.name, (newPrice) =>
+        this.updateTicker(currentTicker.name, newPrice)
+      );
     },
 
     select(ticker) {
@@ -388,15 +375,16 @@ export default {
   watch: {
     selectedTicker() {
       this.graph = [];
+      this.$nextTick().then(this.calculateMaxGraphElements);
     },
     paginatedTickers() {
       if (this.paginatedTickers.length === 0 && this.page > 1) {
         this.page -= 1;
       }
     },
-    /*tickers(newValue, oldValue) {
+    tickers() {
       localStorage.setItem("cryptonomicon-list", JSON.stringify(this.tickers));
-    },*/
+    },
     filter() {
       this.page = 1;
     },
