@@ -1,24 +1,39 @@
 # cryptonomicon
 
-## Project setup
+Проект веб-приложение арбитража криптовалют
+### Возможности
+Поиск любой криптовалюты;\
+отображение ее стоимости в реальном времени;\
+построение графика роста/падения;\
+закрепление нескольких валют;
+
+### Технологии
+VUE3 \
+TailWindCSS \
+[CryptoCompare API](https://min-api.cryptocompare.com/)
+
+### Для запуска проекта:
+
+Важно иметь Node Packet Manager последней стабильной версии
+
 ```
 npm install
 ```
 
-### Compiles and hot-reloads for development
+### dev
+
 ```
 npm run serve
 ```
 
-### Compiles and minifies for production
+### build
+
 ```
 npm run build
 ```
 
-### Lints and fixes files
+### lint
+
 ```
 npm run lint
 ```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).

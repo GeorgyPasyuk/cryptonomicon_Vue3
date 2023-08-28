@@ -1,7 +1,11 @@
 <template>
   <div class="container mx-auto flex flex-col items-center bg-gray-100 p-4">
     <div class="container">
-      <add-ticker @add-ticker="add" :disabled="tooManyTickersAdded" />
+      <add-ticker
+        @add-ticker="add"
+        :disabled="tooManyTickersAdded"
+        :tickers="tickers"
+      />
       <template v-if="tickers.length > 0">
         <hr class="w-full border-t border-gray-600 my-4" />
         <div>
@@ -74,21 +78,6 @@
 </template>
 
 <script>
-// [X] 1. Наличие в состоянии ЗАВСИМЫХ ДАННЫХ | Критичность: 5+
-// [X] 2. Запросы напрямую внутри компонента (???) | Критичность: 5
-// [X] 3. При удалении остается подписка на загрузку тикера | Критичность: 5
-// [ ] 4. Обработка ошибок API | Критичность: 5
-// [Z] 5. Количество запросов | Критичность: 4
-// [X] 6. При удалении тикера не изменяется localStorage | Критичность: 4
-// [X] 7. Одинаковый код в watch | Критичность: 3
-// [] 8. localStorage и анонимный вкладки (недоступность localStorage в анонимых вкладках) | Критичность: 3
-// [X] 9. График ужасно выглядит если много цен | Критичность: 2
-// [] 10. Непонятный строки и числа (URL, 5000ms, ключ локал стораджа, количество на странице) | Критичность: 1
-
-// Параллельно
-// [X] График сломан если везде одинаковые значения
-// [X] При удалении тикера остается выбор
-
 import { subscribeToTicker, unsubscribeFromTicker } from "@/api";
 import AddTicker from "@/components/AddTicker";
 import AddGraph from "@/components/AddGraph";

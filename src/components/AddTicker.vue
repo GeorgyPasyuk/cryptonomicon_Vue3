@@ -18,7 +18,7 @@
           />
         </div>
         <div
-          class="flex bg-white shadow-md p-1 rounded-md shadow-md flex-wrap"
+          class="flex bg-white shadow-md p-1 rounded-md flex-wrap"
           v-if="ticker"
         >
           <span
@@ -55,6 +55,7 @@ export default {
       required: false,
       default: false,
     },
+    tickers: Array,
   },
 
   data() {
