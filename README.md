@@ -1,4 +1,5 @@
 # [Cryptonomicon](https://cryptonomicon-vue3.netlify.app/)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/a9a56066-96b2-45ad-87c2-d93c498e9ea6/deploy-status)](https://app.netlify.com/sites/cryptonomicon-vue3/deploys)
 
 Проект веб-приложение арбитража криптовалют
 ### Возможности
@@ -49,3 +50,4 @@ npm run lint
 В ситуациях когда невозможно просчитать стоимость относительно
 USD, можно делать дополнительный запрос на расчет стоимости к 
 BTC, и еще один для расчета BTC к USD
+
