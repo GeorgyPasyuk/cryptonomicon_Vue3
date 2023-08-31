@@ -1,7 +1,7 @@
 # [Cryptonomicon](https://cryptonomicon-vue3.netlify.app/)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/a9a56066-96b2-45ad-87c2-d93c498e9ea6/deploy-status)](https://app.netlify.com/sites/cryptonomicon-vue3/deploys)
 
-Проект веб-приложение арбитража криптовалют
+Проект веб-приложение мониторинга криптовалют
 ### Возможности
 Поиск любой криптовалюты
 ![Screenshot](./docs/search.png)
